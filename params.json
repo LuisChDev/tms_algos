@@ -1,0 +1,6 @@
+{
+  "evaporation_factor": 0.1,
+  "number_of_ants": 1000,
+  "visibility_weight": 10,
+  "pheromone_weight": 1
+}

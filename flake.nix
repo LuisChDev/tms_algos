@@ -16,7 +16,7 @@
 
       in {
         devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [ rls cargo rustc rustfmt ];
+          buildInputs = with pkgs; [ cargo cargo-edit rustc rustfmt rust-analyzer ];
         };
       });
 }
