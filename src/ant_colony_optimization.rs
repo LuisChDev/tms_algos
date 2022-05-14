@@ -1,9 +1,10 @@
 use rand::prelude::*;
 use std::fs;
 use toml;
+use log::trace;
 
-use crate::solution::Solution;
 use crate::params::Params;
+use crate::solution::Solution;
 
 /// updates the pheromone readings of the table by a given formula.
 /// In addition, pheromone evaporation is carried out across the whole table.
@@ -13,18 +14,20 @@ fn update_pherom<T: Solution>(
   route: &Vec<usize>,
   distances: &Vec<Vec<f64>>,
 ) {
-
   pheromones.iter_mut().for_each(|x| {
     for y in x {
-      *y = (*y)*params.evaporation_factor;
+      *y = (*y) * params.evaporation_factor * 0.000001;
     }
   });
 
-
+  trace!("updating pheromone for route {:?}", route);
   let cost = T::calc_cost(route, distances);
-  for i in 0..route.len() {
-    pheromones[route[i - 1]][i] += 1.0 / cost;
+  for i in 0..(route.len() - 1) {
+    pheromones[route[i]][route[i + 1]] += 1.0 / cost;
   }
+  pheromones[route[usize::checked_sub(route.len(), 1).unwrap()]][0] += 1.0 / cost;
+
+  trace!("resulting pheromone is {:?}", pheromones);
 }
 
 /**
@@ -58,7 +61,8 @@ fn calc_prob(
   let mut cumulative = 0.0;
   for (i, prob) in prob_each.iter().enumerate() {
     cumulative += prob;
-    probs[i] = cumulative;
+    probs.push(cumulative);
+    trace!("probs so far: {:?}", probs);
   }
 }
 
@@ -74,7 +78,15 @@ fn ant<T: Solution>(
   cur_loc: &mut usize,
 ) {
   let mut rand = thread_rng();
-  let mut route = Vec::new();
+  let mut route = Vec::with_capacity(solution.locs().len());
+  route.push(solution.locs()[0]);
+
+  // initialize the rem_locs vector w/ all the locations, except the initial one
+  // (for now just the first one in the array).
+  *rem_locs = solution.locs()[1..].to_vec();
+
+  trace!("{:?}", solution.locs());
+  trace!("current list of locations is {:?}", rem_locs);
 
   while rem_locs.len() > 0 {
     let hit: f64 = rand.gen();
@@ -89,6 +101,8 @@ fn ant<T: Solution>(
       probs,
     );
 
+    trace!("calculated probabilities are: {:?}", probs);
+
     for (i, prob) in probs.iter().enumerate() {
       if hit < *prob {
         route.push(rem_locs[i]);
@@ -96,11 +110,16 @@ fn ant<T: Solution>(
         break;
       }
     }
+
+    // clean the array for future use.
+    probs.clear();
+
+    trace!("Current route is {:?}", route);
   }
 
   update_pherom::<T>(params, pheromone_matrix, &route, solution.distances());
 
-  if T::calc_cost(&route, solution.distances()) < T::calc_cost(&best_route, solution.distances()) {
+  if best_route.len() == 0 || T::calc_cost(&route, solution.distances()) < T::calc_cost(&best_route, solution.distances()) {
     *best_route = route;
   }
 }
@@ -116,7 +135,6 @@ fn ant<T: Solution>(
  * prevent division-by-zero errors.
  */
 pub fn ant_colony_optimize<T: Solution>(solution: &T, init_pherom: f64) -> Vec<usize> {
-
   // store the current best known route.
   let mut best_route: Vec<usize> = Vec::with_capacity(solution.locs().len());
 

@@ -1,4 +1,6 @@
+use log::trace;
 use rand::prelude::*;
+use rocket::serde::{ Serialize, Deserialize };
 
 pub trait Solution {
   fn new(matrix: Vec<Vec<f64>>, route: Option<Vec<usize>>) -> Self;
@@ -13,7 +15,7 @@ pub trait Solution {
   fn distances(&self) -> &Vec<Vec<f64>>;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct TSP {
   cities: Vec<usize>,
   distances: Vec<Vec<f64>>,
@@ -55,6 +57,9 @@ impl Solution for TSP {
   /// returns the current cost of the solution.
   fn calc_cost(locations: &Vec<usize>, distances: &Vec<Vec<f64>>) -> f64 {
     let mut final_cost = 0.0;
+
+
+    trace!("this is the locations: {:?}", locations);
     let mut current = locations[0];
     let route = &locations[1..];
 
@@ -68,7 +73,7 @@ impl Solution for TSP {
   }
 
   fn cost(&self) -> f64 {
-    TSP::calc_cost(&self.cities, &self.distances)
+    Self::calc_cost(&self.cities, &self.distances)
   }
 
   fn locs(&self) -> &Vec<usize> {

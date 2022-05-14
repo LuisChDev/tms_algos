@@ -1,3 +1,4 @@
+use log::trace;
 use rand::prelude::*;
 
 use crate::solution::Solution;
@@ -13,7 +14,7 @@ pub fn anneal<T: Solution>(solution: &mut T) {
 
   while temperature > 1.0 {
     // println!("current temp is {}", temperature);
-    println!("current cost is {}", current_cost);
+    trace!("current cost is {}", current_cost);
 
     let mut rng = thread_rng();
     let first = rng.gen_range(0..solution.locs().len());
