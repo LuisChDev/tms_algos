@@ -30,7 +30,7 @@
             # cargo-edit
             # rustc
             # rustfmt
-            # rust-analyzer
+            rust-analyzer
 
             # debugger support
             gdb
