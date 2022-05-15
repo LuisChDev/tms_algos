@@ -27,7 +27,7 @@
 
           buildInputs = with pkgs; [
             # cargo
-            # cargo-edit
+            cargo-edit
             # rustc
             # rustfmt
             rust-analyzer
