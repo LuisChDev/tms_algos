@@ -22,9 +22,9 @@ pub struct TSP {
 }
 
 impl Solution for TSP {
-  fn new(distances: Vec<Vec<f64>>, route: Option<Vec<usize>>) -> TSP {
+  fn new(distances: Vec<Vec<f64>>, route: Option<Vec<usize>>) -> Self {
     match route {
-      Some(given_route) => TSP { cities: given_route, distances },
+      Some(given_route) => Self { cities: given_route, distances },
       None => {
         let mut cities = Vec::new();
 
@@ -33,7 +33,7 @@ impl Solution for TSP {
           cities.push(city)
         }
 
-        TSP { cities, distances }
+        Self { cities, distances }
       },
     }
   }

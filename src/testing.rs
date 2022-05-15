@@ -1,4 +1,8 @@
-fn basic_tsp() -> TSP {
+use rand::prelude::*;
+
+use crate::{solution::{TSP, Solution}, simulated_annealing, ant_colony_optimization};
+
+pub fn basic_tsp() -> TSP {
   let matr = vec![
     vec![0.0, 22.0, 3.0, 15.0],
     vec![4.0, 0.0, 60.0, 17.0],
@@ -6,10 +10,10 @@ fn basic_tsp() -> TSP {
     vec![71.0, 8.0, 9.0, 0.0],
   ];
 
-  solution::TSP::new(matr, None)
+  TSP::new(matr, None)
 }
 
-fn calculating() {
+pub fn calculating() {
   println!("calculating optimal solution.");
 
   let matr = vec![
@@ -30,7 +34,7 @@ fn calculating() {
   }
 
   println!("creating solution model.");
-  let mut sol = solution::TSP::new(matr, None);
+  let mut sol = TSP::new(matr, None);
   let sol2 = sol.clone();
 
   println!("optimizing using annealing");

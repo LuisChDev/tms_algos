@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-
 //! This file contains the entrypoint to our service.
 
 // data models
@@ -13,13 +11,12 @@ mod simulated_annealing;
 // other
 mod testing;
 
-use rand::prelude::*;
 use rocket::*;
-use rocket_lamb::RocketExt;
 use rocket::serde::json::Json;
+use lambda_web::{is_running_on_lambda, launch_rocket_on_lambda, LambdaError};
 
 use crate::solution::{Solution, TSP};
-
+use crate::testing::basic_tsp;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -27,7 +24,7 @@ fn index() -> &'static str {
 }
 
 #[get("/test")]
-fn testing() -> Json<TSP> {
+fn test() -> Json<TSP> {
   Json(basic_tsp())
 }
 
@@ -37,6 +34,17 @@ fn anneal(problem: rocket::serde::json::Json<TSP>) -> String {
   format!("the cities, in order, are {:?} and the matrix is {:?}", parsed.locs(), parsed.distances())
 }
 
-fn main() -> _ {
-  rocket::ignite().mount("/", routes![index, testing, anneal])
+#[rocket::main]
+async fn main() -> Result<(), LambdaError> {
+  let rocket = rocket::build().mount("/", routes![index, test, anneal]);
+  if is_running_on_lambda() {
+    launch_rocket_on_lambda(rocket).await?
+  } else {
+    rocket.launch().await?
+  }
+  Ok(())
 }
+
+// fn main() -> _ {
+//   rocket::ignite().mount("/", routes![index, test, anneal])
+// }
